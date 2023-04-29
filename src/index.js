@@ -7,13 +7,91 @@ import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
 const optionsNtf = {
   position: 'center-center',
-  timeout: 10000,
+  timeout: 3000,
   clickToClose: true,
   cssAnimationStyle: 'zoom',
 };
 
 const DEBOUNCE_DELAY = 300;
-/*
+
+const refs = {
+  inputEl: document.querySelector('#search-box'),
+  countriesList: document.querySelector('.country-list'),
+  countriesInfo: document.querySelector('.country-info'),
+};
+
+// 2.2.
+refs.inputEl.addEventListener('input', debounce(onInputSearch, DEBOUNCE_DELAY));
+
+// 2.3.
+function onInputSearch() {
+  const country = refs.inputEl.value.trim();
+  if (!country) {
+    clearMarkup();
+    return;
+  }
+  return fetchCountries(country)
+    .then(renderCountries)
+    .catch(err => {
+      if (err.message === '404') noticeError();
+    });
+}
+
+// 2.4.
+function clearMarkup() {
+  refs.countriesList.innerHTML = '';
+  refs.countriesInfo.innerHTML = '';
+}
+
+// 2.5.
+function noticeError() {
+  clearMarkup();
+  return Notify.failure(
+    '👀 Oops, there is no country with that name ¯_(ツ)_/¯',
+    optionsNtf
+  );
+}
+
+//2.6.
+function renderCountries(countriesName) {
+  clearMarkup();
+  if (countriesName.length > 10) {
+    return Notify.info(
+      '(⊙﹏⊙) Too many matches found. Please enter a more specific name. ☝',
+      optionsNtf
+    );
+  }
+  if (countriesName.length >= 2 && countriesName.length <= 10) {
+    answerCountryList(countriesName);
+  } else {
+    answerCountryList(countriesName);
+    answerCountryInfo(countriesName);
+  }
+}
+
+// 2.6.1
+function answerCountryList(countriesName) {
+  const markupCountry = countriesName
+    .map(({ name, flags }) => {
+      return `<li class = "country-list__item"><img src="${flags.svg}" alt="${name.common}" width="80" height="60"><span class = "country-list__name">${name.official}</span></li>`;
+    })
+    .join('');
+  refs.countriesList.innerHTML = markupCountry;
+}
+
+// 2.6.2
+function answerCountryInfo(countriesName) {
+  const markupInfo = countriesName
+    .map(({ capital, population, languages }) => {
+      return `<p class = "country-info__data"><b>Capital:</b> ${capital}</p><p class = "country-info__data"><b>Population:</b> ${population}</p><p class = "country-info__data"><b>Languages:</b> ${Object.values(
+        languages
+      ).join(', ')}</p>`;
+    })
+    .join('');
+  refs.countriesInfo.innerHTML = markupInfo;
+}
+
+/* Var 2
 //2.1.
 const countriesList = document.querySelector('.country-list');
 const countriesInfo = document.querySelector('.country-info');
@@ -109,76 +187,3 @@ function addHidden() {
 */
 
 //====================
-
-const refs = {
-  inputEl: document.querySelector('#search-box'),
-  countriesList: document.querySelector('.country-list'),
-  countriesInfo: document.querySelector('.country-info'),
-};
-
-// 2.2.
-refs.inputEl.addEventListener('input', debounce(onInputSearch, DEBOUNCE_DELAY));
-
-// 2.3.
-function onInputSearch() {
-  const country = refs.inputEl.value.trim();
-  if (!country) {
-    clearMarkup();
-    return;
-  }
-  return fetchCountries(country).then(renderCountries).catch(noticeError);
-}
-
-// 2.4.
-function clearMarkup() {
-  refs.countriesList.innerHTML = '';
-  refs.countriesInfo.innerHTML = '';
-}
-
-// 2.5.
-function noticeError() {
-  clearMarkup();
-  return Notify.failure(
-    '👀 Oops, there is no country with that name ¯_(ツ)_/¯',
-    optionsNtf
-  );
-}
-
-//2.6.
-function renderCountries(countriesName) {
-  clearMarkup();
-  if (countriesName.length > 10) {
-    return Notify.info(
-      '(⊙﹏⊙) Too many matches found. Please enter a more specific name. ☝',
-      optionsNtf
-    );
-  }
-  if (countriesName.length >= 2 && countriesName.length <= 10) {
-    answerCountryList(countriesName);
-  } else {
-    answerCountryList(countriesName);
-    answerCountryInfo(countriesName);
-  }
-}
-
-// 2.6.1
-function answerCountryList(countriesName) {
-  const markupCountry = countriesName
-    .map(({ name, flags }) => {
-      return `<li class = "country-list__item"><img src="${flags.svg}" alt="${name.common}" width="80" height="60"><span class = "country-list__name">${name.official}</span></li>`;
-    })
-    .join('');
-  refs.countriesList.innerHTML = markupCountry;
-}
-
-// 2.6.2
-function answerCountryInfo(countriesName) {
-  const markupInfo = countriesName
-    .map(({ capital, population, languages }) => {
-      return `<p class = "country-info__data"><b>Capital:</b> ${capital}</p><p class = "country-info__data"><b>Population:</b> ${population}</p><p class = "country-info__data"><b>Languages:</b> ${Object.values(
-        languages
-      ).join(', ')}</p>`;
-    })
-    .join('');
-  refs.countriesInfo.innerHTML = markupInfo;
-}
